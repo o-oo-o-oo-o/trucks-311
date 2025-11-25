@@ -3,7 +3,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 
 // Configuration
-const SOURCE_DIR = path.resolve(__dirname, 'media/2025-11-25_00-04-27');
+const SOURCE_DIR = path.resolve(__dirname, 'media/ondeck');
 const SUBMITTED_DIR = path.resolve(__dirname, 'media/submitted');
 
 // Ensure submitted directory exists

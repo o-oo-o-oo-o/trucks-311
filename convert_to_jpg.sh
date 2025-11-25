@@ -16,14 +16,10 @@ if [ ! -d "$IN_DIR" ]; then
   exit 1
 fi
 
-BASE_OUT="/Users/michaelhassin/brain/codes/trucks-311/playwright/media"
+BASE_OUT="/Users/michaelhassin/brain/codes/trucks-311/playwright/media/ondeck"
 
-# Timestamp like 2025-11-24_23-05-12 (no colons)
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-OUT_DIR="$BASE_OUT/$TIMESTAMP"
-
-mkdir -p "$OUT_DIR"
-echo "Output directory: $OUT_DIR"
+mkdir -p "$BASE_OUT"
+echo "Output directory: $BASE_OUT"
 
 shopt -s nullglob
 
@@ -34,7 +30,14 @@ for SRC in "$IN_DIR"/*.HEIC "$IN_DIR"/*.heic; do
 
   FNAME=$(basename "$SRC")
   BASENAME="${FNAME%.*}"
-  DST="$OUT_DIR/${BASENAME}.jpg"
+  
+  # Collision handling
+  DST="$BASE_OUT/${BASENAME}.jpg"
+  COUNTER=1
+  while [ -e "$DST" ]; do
+    DST="$BASE_OUT/${BASENAME}_${COUNTER}.jpg"
+    ((COUNTER++))
+  done
 
   echo "Converting: $SRC -> $DST"
 
@@ -56,4 +59,4 @@ for SRC in "$IN_DIR"/*.HEIC "$IN_DIR"/*.heic; do
   echo "Done: $DST"
 done
 
-echo "All done. Files are in: $OUT_DIR"
+echo "All done. Files are in: $BASE_OUT"

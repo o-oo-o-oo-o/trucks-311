@@ -13,6 +13,7 @@ import fs from "fs";
 test.setTimeout(180_000); // 3 minutes per test
 
 /*
+cd playwright/tests
 npx playwright test tests/app.spec.ts --headed
 */
 
@@ -31,7 +32,7 @@ function getFirstJpegFromMedia(): string {
   }
 
   // __dirname points to playwright/tests (where app.spec.ts lives)
-  const mediaDir = path.resolve(__dirname, "../media/2025-11-25_00-04-27");
+  const mediaDir = path.resolve(__dirname, "../media/ondeck");
 
   if (!fs.existsSync(mediaDir)) {
     throw new Error(`Media directory does not exist: ${mediaDir}`);
