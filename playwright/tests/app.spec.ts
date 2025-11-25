@@ -303,12 +303,25 @@ async function fillSecondPage(page: Page) {
   const ADDRESS_INPUT = "20 CLINTON STREET, NEW YORK";
 
   // Helper: type a string one char at a time w/ random delay
-  async function typeSlowly(selector: string, text: string) {
+  async function typeSlowly(selector: string, text: string, retries = 3) {
     await page.click(selector);
+    // Ensure we start clean if we are retrying or if field has junk
+    await page.fill(selector, "");
+
     for (const ch of text) {
       await page.type(selector, ch, {
         delay: 10 + Math.random() * 90, // between 10–100ms
       });
+    }
+
+    const val = await page.inputValue(selector);
+    if (val !== text) {
+      if (retries > 0) {
+        console.warn(`Mismatch in typeSlowly: expected "${text}", got "${val}". Retrying...`);
+        await typeSlowly(selector, text, retries - 1);
+      } else {
+        throw new Error(`Failed to type text correctly after multiple attempts. Expected "${text}", got "${val}"`);
+      }
     }
   }
 
@@ -339,7 +352,7 @@ async function fillSecondPage(page: Page) {
   // 5) Try to select exact match
   const escaped = ADDRESS_INPUT.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const exactMatch = suggestionItems.filter({
-    hasText: new RegExp(`^${escaped}$`, "i"),
+    hasText: new RegExp(`^ ${escaped}$`, "i"),
   });
 
   if (await exactMatch.count()) {
@@ -555,46 +568,4 @@ test("submit NYC 311 truck route complaint up to captcha", async ({ page }) => {
   ]);
 
   await page.pause();
-
-  // // Now you should be on the final page with reCAPTCHA.
-  // await page.waitForTimeout(6000000);
 });
-
-
-/*
-
-ok we're now failing to put location information in on the second page. let's change strategies and just use the ui components to mimic manual entry of the address.
-
-location type dropdown:
-```
-<select id="n311_locationtypeid_select" class="form-control exclude-from-summary"><option value="" label=""></option><option value="a00a28b5-e84e-e811-a94f-000d3a36098b" disableaddress="false" disableblock="true" disableintersection="true" disablelandmark="true" disablebridgehighway="false" hpdanonymous="false">Highway</option><option value="a20a28b5-e84e-e811-a94f-000d3a36098b" disableaddress="false" disableblock="false" disableintersection="false" disablelandmark="false" disablebridgehighway="true" hpdanonymous="false">Street/Sidewalk</option><option value="a40a28b5-e84e-e811-a94f-000d3a36098b" disableaddress="false" disableblock="true" disableintersection="true" disablelandmark="true" disablebridgehighway="false" hpdanonymous="false">Roadway Tunnel</option></select>
-```
-
-we want to select the "street/sidewalk" option here.
-
-button that fires open the address selection modal:
-```
-<button type="button" class="address-picker-btn btn btn-default" id="SelectAddressWhere" name="Select-Address-Where-Section"><span><i class="fa fa-search"></i></span></button>
-```
-
-once the modal opens, this is the textbox where you type the address in:
-```
-<input id="address-search-box-input" type="text" class="text form-control exclude-from-summary ui-autocomplete-input" placeholder="Search for an NYC Address, Block, Intersection or Landmark" autocomplete="off">
-```
-
-once you type the address in, autocomplete suggestions are filled into here:
-```
-<div id="suggestion-list-0"><ul id="ui-id-1" tabindex="0" class="ui-menu ui-widget ui-widget-content ui-autocomplete ui-front" style="top: 45px; left: 30px; width: 967px; display: none;"><li class="ui-autocomplete-category">Address</li><li aria-label="Address : 20 CLINTON STREET, NEW YORK" class="ui-menu-item"><div id="ui-id-20" tabindex="-1" class="ui-menu-item-wrapper">20 CLINTON STREET, NEW YORK</div></li><li aria-label="Address : 20 CLINTON STREET, BROOKLYN" class="ui-menu-item"><div id="ui-id-21" tabindex="-1" class="ui-menu-item-wrapper">20 CLINTON STREET, BROOKLYN</div></li><li aria-label="Address : 20 CLINTON STREET, STATEN ISLAND" class="ui-menu-item"><div id="ui-id-22" tabindex="-1" class="ui-menu-item-wrapper">20 CLINTON STREET, STATEN ISLAND</div></li></ul></div>
-```
-
-we want to select the first option that case-insensitively exactly matches our input
-
-once that's selected, we want to click this "select address" button
-
-```
-<input type="button" value="Select Address" class="btn btn-primary" id="SelectAddressMap" name="Select-Address-Map-Container">
-```
-captcha:
-<div class="rc-anchor-center-item rc-anchor-checkbox-holder"><span class="recaptcha-checkbox goog-inline-block recaptcha-checkbox-unchecked rc-anchor-checkbox" role="checkbox" aria-checked="false" id="recaptcha-anchor" tabindex="0" dir="ltr" aria-labelledby="recaptcha-anchor-label"><div class="recaptcha-checkbox-border" role="presentation"></div><div class="recaptcha-checkbox-borderAnimation" role="presentation"></div><div class="recaptcha-checkbox-spinner" role="presentation"><div class="recaptcha-checkbox-spinner-overlay"></div></div><div class="recaptcha-checkbox-checkmark" role="presentation"></div></span></div>
-
-*/
