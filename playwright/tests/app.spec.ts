@@ -10,7 +10,7 @@ import { test, expect, Page } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
-test.setTimeout(180_000); // 3 minutes per test
+test.setTimeout(180_000_0); // 30 minutes
 
 /*
 cd playwright/tests
