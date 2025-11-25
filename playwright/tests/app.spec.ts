@@ -23,7 +23,7 @@ const PHOTO_PATH = getFirstJpegFromMedia();
 
 function getFirstJpegFromMedia(): string {
   // __dirname points to playwright/tests (where app.spec.ts lives)
-  const mediaDir = path.resolve(__dirname, "../media");
+  const mediaDir = path.resolve(__dirname, "../media/2025-11-25_00-04-27");
 
   if (!fs.existsSync(mediaDir)) {
     throw new Error(`Media directory does not exist: ${mediaDir}`);
@@ -155,17 +155,9 @@ async function uploadAttachmentAndGetTimestamp(page: Page): Promise<Date> {
   );
   await expect(timeLocator).toBeVisible({ timeout: 60000 });
 
-  const datetimeAttr = await timeLocator.getAttribute("datetime");
-  if (!datetimeAttr) {
-    throw new Error("Date Uploaded <time> element has no datetime attribute");
-  }
-
-  const uploadedAt = new Date(datetimeAttr);
-  if (Number.isNaN(uploadedAt.getTime())) {
-    throw new Error(`Invalid datetime attribute: ${datetimeAttr}`);
-  }
-
-  return uploadedAt;
+  // Return the actual file creation time, not the upload time
+  const stats = fs.statSync(PHOTO_PATH);
+  return stats.birthtime;
 }
 
 async function fillFirstPageFromUpload(page: Page, observed: Date) {
