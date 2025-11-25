@@ -22,6 +22,14 @@ const ARTICLE_URL = "https://portal.311.nyc.gov/article/?kanumber=KA-01957";
 const PHOTO_PATH = getFirstJpegFromMedia();
 
 function getFirstJpegFromMedia(): string {
+  // If TARGET_IMAGE env var is set, use it directly
+  if (process.env.TARGET_IMAGE) {
+    if (!fs.existsSync(process.env.TARGET_IMAGE)) {
+      throw new Error(`Target image does not exist: ${process.env.TARGET_IMAGE}`);
+    }
+    return process.env.TARGET_IMAGE;
+  }
+
   // __dirname points to playwright/tests (where app.spec.ts lives)
   const mediaDir = path.resolve(__dirname, "../media/2025-11-25_00-04-27");
 
