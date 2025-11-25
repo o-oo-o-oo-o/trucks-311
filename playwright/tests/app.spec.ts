@@ -10,7 +10,25 @@ import { test, expect, Page } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
-test.setTimeout(180_000_0); // 30 minutes
+const USER_AGENTS = [
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+];
+
+const randomUA = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+const randomWidth = Math.floor(Math.random() * (1920 - 1280 + 1)) + 1280;
+const randomHeight = Math.floor(Math.random() * (1080 - 720 + 1)) + 720;
+
+console.log(`Using User Agent: ${randomUA}`);
+console.log(`Using Viewport: ${randomWidth}x${randomHeight}`);
+
+test.use({
+  userAgent: randomUA,
+  viewport: { width: randomWidth, height: randomHeight },
+});
 
 /*
 cd playwright/tests
