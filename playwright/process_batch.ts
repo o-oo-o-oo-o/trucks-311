@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 
+// npx ts-node process_batch.ts
+
 // Configuration
 const SOURCE_DIR = path.resolve(__dirname, 'media/ondeck');
 const SUBMITTED_DIR = path.resolve(__dirname, 'media/submitted');
