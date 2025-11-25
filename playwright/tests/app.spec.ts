@@ -361,7 +361,7 @@ async function fillThirdPage(page: Page) {
   const CONTACT_FIRST_NAME = "Michael";
   const CONTACT_LAST_NAME = "Hassin";
   const CONTACT_EMAIL = "hassinmichael@gmail.com";
-  const CONTACT_PRIMARY_PHONE = "8622161173";
+  const CONTACT_PRIMARY_PHONE = "";
 
   const ADDRESS_LINE_1 = "20 Clinton Street";
   const ADDRESS_LINE_2 = "Apt 2A";
