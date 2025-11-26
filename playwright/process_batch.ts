@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+import { chromium } from 'patchright';
+import { runComplaint } from './automation';
 
 // npx ts-node process_batch.ts
 
@@ -27,61 +28,59 @@ async function processBatch() {
 
     console.log(`Found ${files.length} images to process.`);
 
-    for (const file of files) {
-        const fullPath = path.join(SOURCE_DIR, file);
-        console.log(`\n--------------------------------------------------`);
-        console.log(`Processing: ${file}`);
-        console.log(`--------------------------------------------------\n`);
+    // Launch Patchright browser (Chrome channel)
+    const browser = await chromium.launch({
+        channel: 'chrome',
+        headless: false,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Optional args
+    });
 
-        try {
-            await runPlaywrightTest(fullPath);
+    try {
+        for (const file of files) {
+            const fullPath = path.join(SOURCE_DIR, file);
+            console.log(`\n--------------------------------------------------`);
+            console.log(`Processing: ${file}`);
+            console.log(`--------------------------------------------------\n`);
 
-            // If we get here, the test passed (exit code 0)
-            console.log(`\n[SUCCESS] Submission completed for ${file}`);
+            const context = await browser.newContext({
+                viewport: null, // Let browser decide or maximize
+            });
+            const page = await context.newPage();
 
-            // Move to submitted folder
-            const destPath = path.join(SUBMITTED_DIR, file);
-            fs.renameSync(fullPath, destPath);
-            console.log(`Moved to: ${destPath}`);
+            try {
+                await runComplaint(page, fullPath);
 
-        } catch (error) {
-            console.error(`\n[FAILURE] Failed to process ${file}`);
-            console.error(error);
+                // If we get here, the function completed (meaning user resumed after pause)
+                console.log(`\n[SUCCESS] Submission completed for ${file}`);
 
-            // Stop processing on failure to let user investigate
-            console.log('Stopping batch processing due to error.');
-            process.exit(1);
+                // Move to submitted folder
+                const destPath = path.join(SUBMITTED_DIR, file);
+                fs.renameSync(fullPath, destPath);
+                console.log(`Moved to: ${destPath}`);
+
+                // Random delay between 1 and 3 seconds to mimic human pace
+                const delaySeconds = Math.floor(Math.random() * (3 - 1 + 1)) + 1;
+                console.log(`Waiting ${delaySeconds} seconds before next submission...`);
+                await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
+
+            } catch (error) {
+                console.error(`\n[FAILURE] Failed to process ${file}`);
+                console.error(error);
+
+                // Stop processing on failure to let user investigate
+                console.log('Stopping batch processing due to error.');
+                await context.close();
+                await browser.close();
+                process.exit(1);
+            }
+
+            await context.close();
         }
+    } finally {
+        await browser.close();
     }
 
     console.log(`\nAll images processed!`);
-}
-
-function runPlaywrightTest(imagePath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const env = { ...process.env, TARGET_IMAGE: imagePath };
-
-        // Spawn the playwright test command
-        // Using 'inherit' for stdio to let the user interact with the browser/terminal if needed
-        // and to see the test output directly.
-        const child = spawn('npx', ['playwright', 'test', 'tests/app.spec.ts', '--headed'], {
-            env,
-            stdio: 'inherit',
-            cwd: __dirname // Run from the playwright directory
-        });
-
-        child.on('close', (code) => {
-            if (code === 0) {
-                resolve();
-            } else {
-                reject(new Error(`Playwright test exited with code ${code}`));
-            }
-        });
-
-        child.on('error', (err) => {
-            reject(err);
-        });
-    });
 }
 
 processBatch().catch(console.error);
