@@ -2,14 +2,9 @@
 set -euo pipefail
 
 # run with:
-# ./convert_to_jpg.sh /path/to/your/heic_folder
+# ./convert_to_jpg.sh
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 /path/to/input_directory_with_heic_files"
-  exit 1
-fi
-
-IN_DIR="$1"
+IN_DIR="/Users/michaelhassin/brain/codes/trucks-311/playwright/media/raw"
 
 if [ ! -d "$IN_DIR" ]; then
   echo "Error: '$IN_DIR' is not a directory"
@@ -19,6 +14,7 @@ fi
 BASE_OUT="/Users/michaelhassin/brain/codes/trucks-311/playwright/media/ondeck"
 
 mkdir -p "$BASE_OUT"
+echo "Input directory: $IN_DIR"
 echo "Output directory: $BASE_OUT"
 
 shopt -s nullglob
@@ -57,6 +53,10 @@ for SRC in "$IN_DIR"/*.HEIC "$IN_DIR"/*.heic; do
     "$DST" >/dev/null
 
   echo "Done: $DST"
+  
+  # Delete the original file
+  rm "$SRC"
+  echo "Deleted original: $SRC"
 done
 
 echo "All done. Files are in: $BASE_OUT"
