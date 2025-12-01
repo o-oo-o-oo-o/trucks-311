@@ -158,7 +158,7 @@ async function fillFirstPageFromUpload(page: any, observed: Date) {
     // 4) Problem description, using the observed date/time
     const observedText = formatObservedSummary(observed);
     const problemText =
-        observedText + "Truck observed using a non-truck route.\n";
+        observedText + "Truck observed using a non-truck route. NYPD is misunderstanding the complaint. The truck is not conducting business (making a pickup or delivery) on Clinton Street. It's driving straight through, which is a traffic law violation since Clinton Street is not a designated truck route. I'm a chronic caller because the problem is chronic and 311 explicitly instructs me to submit a new complaint if I observe a new occurrence of the violation.\n";
 
     const problemLocator = page.locator(
         'textarea[aria-label="Describe the Problem"], textarea[aria-label*="Describe the Problem"], textarea[name*="description"]'
